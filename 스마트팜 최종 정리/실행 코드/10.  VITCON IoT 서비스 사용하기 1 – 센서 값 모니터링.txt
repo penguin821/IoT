@@ -1,0 +1,54 @@
+#include "DHT.h"
+#include <VitconBrokerComm.h>
+
+// <VitconBrokerComm.h>안의 네임스페이스 vitcon : BrokerComm얘가 우리가 아는 네트워크 구조
+// IOTItem~flo int 얘는 네트워크의 변수 설정
+using namespace vitcon; 
+
+#define DHTPIN A1 // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT22 // DHT 22 (AM2302), AM2321
+#define SOILHUMI A6
+
+// Initialize DHT sensor.
+DHT dht(DHTPIN, DHTTYPE);
+
+uint32_t DataCaptureDelay = 2000; //ms
+uint32_t DataCapture_ST = 0; //Start Time
+int Soilhumi = 0;
+float Temp;
+float Humi;
+
+/*widget label*/
+IOTItemFlo dht22_temp;
+IOTItemFlo dht22_humi;
+IOTItemInt soilhumi;
+
+/* A set of definition for IOT items */
+#define ITEM_COUNT 3
+IOTItem *items[ITEM_COUNT] = { &dht22_temp, &dht22_humi, &soilhumi }; //서버 위젯 인덱스와 연동
+
+/* IOT server communication manager */
+const char device_id[] = ""; // Change device_id to yours
+BrokerComm comm(&Serial, device_id, items, ITEM_COUNT);
+void setup() {
+ Serial.begin(250000); //서버와의 통신을 위한 속도 지정
+ comm.SetInterval(200);
+ dht.begin();
+ pinMode(SOILHUMI, INPUT);
+ DataCapture_ST = millis();
+}
+void loop() {
+ Soilhumi = map(analogRead(SOILHUMI), 0, 1023, 100, 0);
+ if (millis() - DataCapture_ST > DataCaptureDelay) { //2초 간격으로 실행
+ Humi = dht.readHumidity();
+ // Read temperature as Celsius (the default)
+Temp = dht.readTemperature();
+ DataCapture_ST = millis();
+ }
+ //MODLINK에서 읽은 값을 서버로 전송
+ dht22_temp.Set(Temp);
+ dht22_humi.Set(Humi);
+ soilhumi.Set(Soilhumi);
+// tcp실행!
+ comm.Run();
+}

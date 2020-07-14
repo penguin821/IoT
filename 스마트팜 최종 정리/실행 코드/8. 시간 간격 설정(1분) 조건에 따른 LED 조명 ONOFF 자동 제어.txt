@@ -1,0 +1,30 @@
+#define LAMP 17 //D17 핀을 LED 조명과 연결된 릴레이 핀으로 지정 
+ 
+uint32_t TimeCompare; 
+uint32_t StartTime = 0;
+
+//LAMP가 ON/OFF하게 될 시간 간격 설정(최소 단위 1분) 
+uint32_t TimeSum; //총 시간(ms 단위) 
+int Hour = 0; //시간 
+int Minute = 1; //분 
+ 
+void setup() {  
+  pinMode(LAMP, OUTPUT);//D3핀을 출력 모드로 지정 
+  TimeSum = (uint32_t)(Hour * 60 + Minute) * 60 * 1000; //Interval시간단위, ms단위로 변환 
+  StartTime = millis();
+}
+ 
+void loop() {  
+  //현재 시간에서 setup함수가 끝난 시점의 시간을 빼고 Interval 시간 단위로 나눈다.  
+  TimeCompare = (millis() - StartTime) / TimeSum ; 
+ 
+  //대략 1분 간격으로 LED 조명이 ON/OFF된다. 
+   if (TimeCompare % 2 == 0) {
+    //TimeCompare값이 2의 배수일 때   
+    digitalWrite(LAMP, LOW);  
+    }  
+    else if (TimeCompare % 2 == 1) {
+      //TimeCompare값이 2의 배수가 아닐 때    
+      digitalWrite(LAMP, HIGH);  
+    } 
+}

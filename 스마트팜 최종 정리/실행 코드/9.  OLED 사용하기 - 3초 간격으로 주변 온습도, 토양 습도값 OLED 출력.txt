@@ -1,0 +1,54 @@
+#include <U8g2lib.h>
+#include "DHT.h"
+// oled 초기화로 어떤 타입의 기계인지 아렬주는거 128*64짜리 모니터다
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+#define DHTPIN A1 // Digital pin connected to the DHT sensor A1핀을 사용한다
+#define DHTTYPE DHT22 // DHT 22 (AM2302), AM2321  dht22타입이다 알려줌
+#define SOILHUMI A6  //A6핀을 사용한다. 
+// Initialize DHT sensor.
+
+DHT dht(DHTPIN, DHTTYPE);
+uint32_t DataCaptureDelay =3000; //ms
+uint32_t DataCapture_ST = 0; //Start Time
+int Soilhumi = 0;
+float Temp;
+float Humi;
+void setup() {
+ dht.begin();
+ u8g2.begin();
+ DataCapture_ST = millis();
+ pinMode(SOILHUMI, INPUT);
+}
+void loop() {
+ Soilhumi = map(analogRead(SOILHUMI), 0, 1023, 100, 0); //교재 32참고 A6의 저항값을 디지털로 바꾸는 함수 
+if ((millis() - DataCapture_ST) > DataCaptureDelay) { //3초 간격으로 실행
+ Humi = dht.readHumidity();
+ // Read temperature as Celsius (the default)
+ Temp = dht.readTemperature();
+ // Check if any reads failed and exit early (to try again).
+ if (isnan(Humi) || isnan(Temp)) {
+ Serial.println(F("Failed to read from DHT sensor!"));
+ return;
+ }
+ OLEDdraw(); //OLED에 데이터 출력
+ DataCapture_ST = millis();
+ }
+}
+void OLEDdraw() {
+ u8g2.clearBuffer();
+ u8g2.setFont(u8g2_font_ncenB08_te); //폰트 지정
+ u8g2.drawStr(1, 15, " SMART FARM"); //x축좌표, y축좌표, 문자열
+ u8g2.drawStr(15, 36, "Temp.");
+ u8g2.setCursor(85, 36);
+ u8g2.print(Temp);
+ u8g2.drawStr(114, 36, "\xb0" );
+ u8g2.drawStr(119, 36, "C");
+ u8g2.drawStr(15, 47, "Humidity");
+ u8g2.setCursor(85, 47); u8g2.print(Humi);
+ u8g2.drawStr(116, 47, "%");
+ u8g2.drawStr(15, 58, "Soil Humi.");
+ u8g2.setCursor(85, 58); u8g2.print(Soilhumi);
+ u8g2.drawStr(116, 58, "%");
+ u8g2.sendBuffer();
+}

@@ -1,0 +1,18 @@
+#define SOILHUMI A6 
+ 
+int Soilhumi = 0; 
+ 
+void setup() {   
+  Serial.begin(9600);  
+  pinMode(SOILHUMI, INPUT); 
+}
+ 
+void loop() {  
+  //습도가 높아질수록 숫자가 커지도록 변환  
+  //토양 습도 단계를 0~1023에서 0~100으로 변환 
+  Soilhumi = map(analogRead(SOILHUMI), 0, 1023, 100, 0); 
+ 
+  Serial.print("현재 토양 습도 : "); 
+  Serial.println(Soilhumi); 
+  delay(500); //0.5초 딜레이
+} 

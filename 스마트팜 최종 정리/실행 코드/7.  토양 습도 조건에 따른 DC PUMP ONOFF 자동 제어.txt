@@ -1,0 +1,25 @@
+#define PUMP 16      //D16 핀을 DC PUMP와 연결된 릴레이 핀으로 지정 
+#define SOILHUMI A6  //A6 핀을 SOIL-LINK에서 센서 값을 받아오는 핀으로 지정
+int Soilhumi = 0; 
+ 
+void setup() {  
+  pinMode(PUMP, OUTPUT);    //D16핀을 출력 모드로 지정  
+  pinMode(SOILHUMI, INPUT);  //A6핀을 입력 모드로 지정
+}
+ 
+void loop() {  
+  //습도가 높아질수록 숫자가 커지도록 변환  
+  //토양 습도 단계를 0~1023에서 0~100으로 변환 
+  Soilhumi = map(analogRead(SOILHUMI), 0, 1023, 100, 0); 
+ 
+  /* FAN auto control */  
+  if (Soilhumi <= 30) {
+    //토양 습도 값이 30이하일 때   
+    digitalWrite(PUMP, HIGH); //펌프 모터 ON  
+    }   
+    else if (Soilhumi >= 60) 
+    {
+      //토양 습도 값이 60이상일 때 
+      digitalWrite(PUMP, LOW); //펌프 모터 OFF  
+    } 
+}

@@ -1,0 +1,33 @@
+#include "DHT.h" //교재 참고 
+
+// #은 매크로 표현으로 컴파일시 DHTPIN에 자동으로 A1이 할당됌
+#define DHTPIN A1 // Digital pin connected to the DHT sensor ==A1핀에 접해라
+#define DHTTYPE DHT22 // DHT 22 (AM2302), AM2321 //  센서의 타입으로 우리모델은 22모델
+
+// Initialize DHT sensor.
+DHT dht(DHTPIN, DHTTYPE); //  dht 클래스 생성
+
+uint32_t DataCaptureDelay = 2000; //ms   // 32비트 인트로 재정의함 2초
+uint32_t StartTime = 0;
+void setup() {
+ Serial.begin(9600);
+ dht.begin();//센서도 시작해라
+ StartTime = millis();  //시작시간을 ms로 저장
+}
+void loop() {
+ if ((millis() - StartTime) > DataCaptureDelay) { //2초 간격으로 실행  
+ float h = dht.readHumidity();//습도 읽어오는 함수 (저항값을 읽어서 -> 디지털신호인 플로트로)
+ // Read temperature as Celsius (the default)
+ float t = dht.readTemperature(); // 온도를 읽어오는 함수 (저항값을 읽어서 -> 디지털신호인 플로트)
+ // Check if any reads failed and exit early (to try again).
+ if (isnan(h) || isnan(t)) {  // isnan 함수는 뭐가 들어갔냐 마냐를 확인하는 함수 
+ Serial.println(F("Failed to read from DHT sensor!"));
+ return;
+ }
+ Serial.print(F("Humidity: "));
+ Serial.print(h);
+ Serial.print(F("% Temperature: "));
+ Serial.print(t);
+ Serial.println(F("°C "));
+ StartTime = millis();
+ }

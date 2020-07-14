@@ -1,0 +1,14 @@
+#include "SoftPWM.h"
+ 
+SOFTPWM_DEFINE_CHANNEL(A3);  //SoftPWM으로 사용할 핀 설정 
+ 
+void setup() { 
+  SoftPWM.begin(490); //PWM frequency 설정
+}
+ 
+void loop() {
+  SoftPWM.set(100); //duty rate 100%, DC FAN 켜짐   
+  delay(2000); //2초 딜레이   
+  SoftPWM.set(0); //duty rate 0%, DC FAN 꺼짐  
+  delay(2000); //2초 딜레이
+}

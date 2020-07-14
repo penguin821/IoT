@@ -1,0 +1,21 @@
+#include "SoftPWM.h" 
+SOFTPWM_DEFINE_CHANNEL(A3);  //SoftPWM으로 사용할 핀 설정 
+ 
+void setup() {  
+  SoftPWM.begin(490); //PWM frequency 설정
+}
+ 
+void loop() {  
+  //최소 duty rate : 65%  
+  for (int i = 65; i < 100; i++)   {  
+    //팬 속도가 점점 빨라짐   
+ SoftPWM.set(i);   
+ delay(100);
+  }
+ 
+  //최대 duty rate : 100%  
+  for (int i = 100; i > 65; i--)   {  
+    //팬 속도가 점점 느려짐   
+    SoftPWM.set( i);   
+    delay(100);   } 
+}

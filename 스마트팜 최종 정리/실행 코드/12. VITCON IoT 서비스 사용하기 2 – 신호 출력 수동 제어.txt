@@ -1,0 +1,67 @@
+#include <VitconBrokerComm.h>
+using namespace vitcon;
+#include "SoftPWM.h"
+
+#define LAMP 17 
+#define PUMP 16
+SOFTPWM_DEFINE_CHANNEL(A3); //SoftPWM으로 사용할 핀 설정
+
+bool fan_out_status;
+bool pump_out_status;
+bool lamp_out_status;
+
+//manual mode일 때 FAN을 제어하는 함수
+void fan_out(bool val) {
+ fan_out_status = val;
+}
+//manual mode일 때 PUMP를 제어하는 함수
+void pump_out(bool val) {
+ pump_out_status = val;
+}
+//manual mode일 때 LAMP를 제어하는 함수
+void lamp_out(bool val) {
+ lamp_out_status = val;
+}
+/*widget toggle switch*/ 
+// bin은 네트워크에게 함수를 던져줌 
+IOTItemBin FanStatus;
+IOTItemBin Fan(fan_out);
+
+IOTItemBin PumpStatus;
+IOTItemBin Pump(pump_out);
+
+IOTItemBin LampStatus;
+IOTItemBin Lamp(lamp_out);
+
+/* A set of definition for IOT items */
+#define ITEM_COUNT 6
+
+//서버 위젯 인덱스와 연동
+IOTItem *items[ITEM_COUNT] = { &FanStatus, &Fan,
+ &PumpStatus, &Pump,
+&LampStatus, &Lamp
+ };
+
+/* IOT server communication manager */
+const char device_id[] = "8813f0774741fb386eec9bd9e6bcfaaf"; // Change device_id to yours
+BrokerComm comm(&Serial, device_id, items, ITEM_COUNT);
+
+void setup() {
+ Serial.begin(250000); //서버와의 통신을 위한 속도 지정
+ comm.SetInterval(200);
+
+ SoftPWM.begin(490); //PWM frequency 설정
+ pinMode(LAMP, OUTPUT);
+ pinMode(PUMP, OUTPUT);
+}
+void loop() {
+ if (fan_out_status == true) SoftPWM.set(100); //duty rate 100%, DC FAN 켜짐
+ else SoftPWM.set(0); //duty rate 0%, DC FAN 꺼짐
+ digitalWrite(PUMP, pump_out_status);
+ digitalWrite(LAMP, lamp_out_status);
+
+ FanStatus.Set(fan_out_status);
+ LampStatus.Set(digitalRead(LAMP));
+ PumpStatus.Set(digitalRead(PUMP));
+ comm.Run();
+}

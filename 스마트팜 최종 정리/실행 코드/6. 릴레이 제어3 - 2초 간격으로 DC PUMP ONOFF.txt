@@ -1,0 +1,14 @@
+#define PUMP 16 //D16 핀을 DC PUMP와 연결된 릴레이 핀으로 지정
+void setup() {
+ pinMode(PUMP, OUTPUT); //D16핀을 출력 모드로 지정 // digitalWrite는 출력모드로 해야 돌아간다. 
+}
+void loop() {
+ //DC PUMP와 연결된 RELAY 접점 ON
+ digitalWrite(PUMP, HIGH);
+ delay(2000); //2초 딜레이
+ //DC PUMP와 연결된 RELAY 접점 OFF
+ digitalWrite(PUMP, LOW);
+ delay(2000); //2초 딜레이
+}
+
+//릴레이는 자석 코일이 붙어있다. // 교재 참고

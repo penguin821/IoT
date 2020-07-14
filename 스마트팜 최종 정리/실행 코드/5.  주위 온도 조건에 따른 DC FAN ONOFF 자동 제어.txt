@@ -1,0 +1,43 @@
+#include "DHT.h"
+#include "SoftPWM.h" 
+ 
+#define DHTPIN A1       // Digital pin connected to the DHT sensor
+#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321        
+ 
+// Initialize DHT sensor.
+DHT dht(DHTPIN, DHTTYPE); 
+ 
+SOFTPWM_DEFINE_CHANNEL(A3);  //SoftPWM으로 사용할 핀 설정 
+ 
+uint32_t DataCaptureDelay = 2000; //ms 
+uint32_t StartTime = 0; 
+ 
+void setup() {   
+  Serial.begin(9600); 
+ 
+  dht.begin();
+  SoftPWM.begin(490); //PWM frequency 설정
+  StartTime = millis();
+}
+ 
+void loop() {  
+  if ((millis() - StartTime) > DataCaptureDelay) {
+    //2초 간격으로 실행 
+    // Read temperature as Celsius (the default)   
+    float t = dht.readTemperature(); 
+ 
+    /* a FAN auto control */    
+    if (t >= 30) {
+      // 화분 주변 온도가 30*C 이상일 때     
+      SoftPWM.set(100);    
+      }    
+      else if (t <= 29) { 
+        // 화분 주변 온도가 29*C 이하일 때   
+        SoftPWM.set(0);    
+        } 
+ 
+    Serial.print(t);   
+    Serial.println(F("°C "));    
+    StartTime = millis();
+  }
+}

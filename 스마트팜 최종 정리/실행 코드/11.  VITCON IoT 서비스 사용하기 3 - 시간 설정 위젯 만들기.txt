@@ -1,0 +1,108 @@
+#include <VitconBrokerComm.h>
+using namespace vitcon; 
+ 
+#define LAMP 17 
+ 
+bool timeset = false; 
+bool Interval_Mup_status;
+bool Interval_Hup_status; 
+ 
+int Hour = 0;
+int Minute = 1;
+uint32_t TimeSum = 0; 
+uint32_t TimeCompare; 
+ 
+uint32_t TimePushDelay = 0; 
+uint32_t TimerStartTime = 0; 
+ 
+//Interval 설정 모드로 들어가기 위한 함수 
+void timeset_out(bool val) {   timeset = val; } 
+ 
+//Interval 시간 단위를 조절하는 함수 
+void Interval_Hup(bool val) {   Interval_Hup_status = val; } 
+ 
+//Interval 분 단위를 조절하는 함수 
+void Interval_Mup(bool val) {   Interval_Mup_status = val; } 
+ 
+//Interval을 0시 0분으로 리셋하는 함수 
+void IntervalReset(bool val) {   
+  if (!timeset && val) { 
+    Hour = 0;     Minute = 0;  
+    } 
+}
+
+/*widget toggle switch*/
+IOTItemBin StopStatus;
+IOTItemBin Stop(timeset_out); 
+ 
+/*widget push button*/
+IOTItemBin IntervalHUP(Interval_Hup); 
+IOTItemBin IntervalMUP(Interval_Mup); 
+IOTItemBin IntervalRST(IntervalReset); 
+ 
+/*widget Num/Str*/ 
+IOTItemInt label_Hinterval; 
+IOTItemInt label_Minterval; 
+ 
+/* A set of definition for IOT items */
+#define ITEM_COUNT 7 
+ 
+IOTItem *items[ITEM_COUNT] = { &StopStatus, &Stop,     
+&IntervalHUP, &IntervalMUP, &IntervalRST,   
+&label_Hinterval, &label_Minterval                
+}; 
+ 
+/* IOT server communication manager */ 
+const char device_id[] = "0ff940f5fbd169e4c7272b90452dadd3"; // Change device_id to yours 
+BrokerComm comm(&Serial, device_id, items, ITEM_COUNT); 
+ 
+void setup() {  
+  Serial.begin(250000);  
+  comm.SetInterval(200); 
+ 
+  pinMode(LAMP, OUTPUT);//D3핀을 출력 모드로 지정 
+  digitalWrite(LAMP, LOW); 
+} 
+ 
+void loop() {  
+  InvervalSet(timeset); 
+  
+ /* a LAMP auto control */  
+ if (timeset) {     
+  if (TimeCompare % 2 == 0) { 
+    digitalWrite(LAMP, LOW);    
+    }     
+    else if (TimeCompare % 2 == 1) {   
+      digitalWrite(LAMP, HIGH);  
+      }   
+ }  
+ else if (!timeset) {     digitalWrite(LAMP, LOW);   } 
+ 
+  StopStatus.Set(timeset);  
+  label_Hinterval.Set(Hour); 
+  label_Minterval.Set(Minute); 
+  comm.Run(); 
+} 
+ 
+/* Interval time set */ 
+void InvervalSet(bool timeset) { 
+  if (!timeset) {
+    //시간설정 스위치가 OFF일 때   
+    TimeSum = (uint32_t)(Hour * 60 + Minute) * 60 * 1000; //ms단위로 변환  
+    TimerStartTime = millis(); 
+ 
+    if (millis() > TimePushDelay + 500) {
+      //위젯 버튼 누르는 시간 딜레이 주기    
+      Hour += Interval_Hup_status;     
+      if (Hour >= 24) Hour = 0;     
+      Minute += Interval_Mup_status;  
+      if (Minute >= 60) Minute = 0; 
+ 
+      TimePushDelay = millis();   
+      }
+  }   
+      else if (timeset) { 
+        //시간 설정 스위치가 ON일 때     
+        TimeCompare = (millis() - TimerStartTime) / TimeSum ;  
+      }
+} 

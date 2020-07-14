@@ -1,0 +1,13 @@
+int a = 123; // int = -32768~322767 아두이노는 이 인트를 저장하기위해 2바이트를 사용 = 16비트 2^16 = 65536개
+float b = 123.456; // 소수점를 나타내기 위한 방식 ex)3.141592를 쓴다면 컴퓨터는 3141592숫자와 소숫점의 위치로 나눠 기억함
+String c = "Hello MODLINK!"; //아두이노에서 제공하는 클래스로 문자열을 사용할 수 있다
+
+void setup() { //교재 참고 
+ Serial.begin(9600); //시리얼과 아두이노의 통신 속도 설정, 보통 9600을 많이 사용한다
+ Serial.println("Serial Monitor 사용하기 예제"); // 시리얼에 출력해라
+ Serial.println(a); //a를 출력해라
+ Serial.println(b,3); // b를 3번 출력해라
+ Serial.println(c); //c를 출력해라
+}
+void loop() {
+}
